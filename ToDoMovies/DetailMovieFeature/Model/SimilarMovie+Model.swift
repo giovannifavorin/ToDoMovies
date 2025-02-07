@@ -1,18 +1,29 @@
 import Foundation
 
 struct SimilarMoviesResponse: Codable {
-    let results: [SimilarMovie]
+    let results: [SimilarMovieDTO]
 }
 
-struct SimilarMovie: Codable {
+struct SimilarMovieDTO: Codable {
     let id: Int
     let title: String
-    let overview: String
-    let release_date: String
-    let vote_average: Double
-    let vote_count: Int
-    let poster_path: String?
-//    let backdrop_path: String
-    let genre_ids: [Int]
-    
+    let releaseDate: String
+    let posterPath: String?
+    let genreIDs: [Int]
+
+    enum CodingKeys: String, CodingKey {
+        case id, title
+        case genreIDs = "genre_ids"
+        case releaseDate = "release_date"
+        case posterPath = "poster_path"
+    }
+}
+
+struct GenreDTO: Codable {
+    let id: Int
+    let name: String
+}
+
+struct GenreResponse: Codable {
+    let genres: [GenreDTO]
 }
