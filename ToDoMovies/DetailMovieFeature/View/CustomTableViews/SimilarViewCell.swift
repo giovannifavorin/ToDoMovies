@@ -1,6 +1,6 @@
 import UIKit
 
-class SimilarTableViewCell: UITableViewCell {
+class SimilarTableViewCell: UICollectionViewCell {
     static let identifier = "SimilarTableViewCell"
     
     private let movieImageView: UIImageView = {
@@ -41,10 +41,8 @@ class SimilarTableViewCell: UITableViewCell {
         return stackView
     }()
     
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        selectionStyle = .none
-        
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
     }
     

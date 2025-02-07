@@ -1,11 +1,13 @@
 import UIKit
 
-class HighlightTableViewCell: UITableViewCell {
+class HighlightTableViewCell: UICollectionViewCell {
     static let identifier = "HighlightTableViewCell"
     var viewModel: ViewModel?
 
     private let movieImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -53,11 +55,9 @@ class HighlightTableViewCell: UITableViewCell {
         
         return stackView
     }()
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        selectionStyle = .none
-        
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
         setupUI()
     }
     
@@ -66,19 +66,13 @@ class HighlightTableViewCell: UITableViewCell {
     }
     
     private func setupUI() {
-        contentView.addSubview(movieImageView)
         contentView.addSubview(stackView)
 
         NSLayoutConstraint.activate([
-            // Constraints da imagem do filme
-            movieImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            movieImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            movieImageView.widthAnchor.constraint(equalToConstant: 100),
-            movieImageView.heightAnchor.constraint(equalToConstant: 150),
-            
             // Constraints do stackView
-            stackView.leadingAnchor.constraint(equalTo: movieImageView.trailingAnchor, constant: 8),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 8),
+            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             stackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             
             // Ajustando a altura mínima da célula
@@ -86,9 +80,7 @@ class HighlightTableViewCell: UITableViewCell {
         ])
     }
 
-
-    func configure(image: String, title: String, like: Bool, popularity: String, voteCount: String, viewModel: ViewModel) {
-        movieImageView.loadImage(from: image)
+    func configure(title: String, like: Bool, popularity: String, voteCount: String, viewModel: ViewModel) {
         movieTitle.text = title
         likes.text = voteCount
         self.popularity.text = popularity

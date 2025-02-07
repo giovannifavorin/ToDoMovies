@@ -6,15 +6,15 @@ class ViewController: UIViewController {
     private let movieID = 550
     var store = Set<AnyCancellable>()
     
-    private let tableView = {
-        let tableView = UITableView(frame: .zero, style: .plain)
-        tableView.showsHorizontalScrollIndicator = false
-        tableView.separatorStyle = .none
-        tableView.estimatedRowHeight = 44
-        tableView.rowHeight = UITableView.automaticDimension
-
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        return tableView
+    private lazy var collectionView = {
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout { sectionIndex, _ -> NSCollectionLayoutSection? in
+            return self.createSectionLayout(sectionIndex: sectionIndex)
+        })
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.showsVerticalScrollIndicator = false
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
     }()
     
     override func viewWillAppear(_ animated: Bool) {
@@ -25,65 +25,107 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        //        setupBindings()
+        setupBindings()
         setupTableView()
+        
         viewModel.fetchGenres()
         viewModel.fetchMovieDetails(movieID: movieID)
         viewModel.fetchSimilarMovies(movieID: movieID)
-        
-        viewModel.$sections.receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                UIView.performWithoutAnimation {
-                    self.tableView.reloadData()
-                }
-            }
-            .store(in: &store)
     }
     
     private func setupUI() {
         view.backgroundColor = .white
         
-        view.addSubview(tableView)
+        view.addSubview(collectionView)
+        
+        collectionView.backgroundColor = .red
         
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
     
     func setupTableView() {
-        tableView.dataSource = self
-        tableView.delegate = self
+        collectionView.dataSource = self
+        collectionView.delegate = self
         
-        tableView.register(SimilarTableViewCell.self, forCellReuseIdentifier: SimilarTableViewCell.identifier)
-        tableView.register(FooterTableViewCell.self, forCellReuseIdentifier: FooterTableViewCell.identifier)
-        tableView.register(HighlightTableViewCell.self, forCellReuseIdentifier: HighlightTableViewCell.identifier)
+        collectionView.register(SimilarTableViewCell.self, forCellWithReuseIdentifier: SimilarTableViewCell.identifier)
+        collectionView.register(FooterTableViewCell.self, forCellWithReuseIdentifier: FooterTableViewCell.identifier)
+        collectionView.register(HighlightTableViewCell.self, forCellWithReuseIdentifier: HighlightTableViewCell.identifier)
+        
+        collectionView.register(ImageHeaderCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier)
     }
     
-    //    private func setupBindings() {
-    //        viewModel.movieDetails = { [weak self] movieDetails in
-    //            self?.movieDetailView.titleLabel.text = movieDetails.title
-    //            if let posterPath = movieDetails.posterPath {
-    //                self?.movieDetailView.posterImageView.loadImage(from: "https://image.tmdb.org/t/p/w500\(posterPath)")
-    //            }
-    //        }
-    //
-    //        viewModel.similarMovies = { [weak self] similarTitles in
-    //            self?.movieDetailView.updateSimilarMovies(similarTitles)
-    //        }
-    //    }
+        private func setupBindings() {
+            viewModel.$sections.receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    guard let self else { return }
+                    UIView.performWithoutAnimation {
+                        self.collectionView.reloadData()
+                    }
+                }
+                .store(in: &store)
+        }
+    
+    func createSectionLayout(sectionIndex: Int) -> NSCollectionLayoutSection {
+        let section = self.viewModel.sections[sectionIndex]
+        
+        switch section {
+        case .highlight:
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                  heightDimension: .estimated(44))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                   heightDimension: .estimated(44))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            
+            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+            
+            let section = NSCollectionLayoutSection(group: group)
+            section.interGroupSpacing = 16
+            
+            // Configuração do header
+            let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
+                                                    heightDimension: .absolute(300))
+            let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
+                layoutSize: headerSize,
+                elementKind: UICollectionView.elementKindSectionHeader,
+                alignment: .top)
+            
+            sectionHeader.pinToVisibleBounds = false
+            sectionHeader.zIndex = -1
+            
+            section.boundarySupplementaryItems = [sectionHeader]
+            section.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0)
+            
+            
+            return section
+        default:
+            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
+            let item = NSCollectionLayoutItem(layoutSize: itemSize)
+            
+            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
+            let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
+            
+            let section = NSCollectionLayoutSection(group: group)
+            section.interGroupSpacing = 16
+            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+            
+            return section
+        }
+    }
 }
 
-extension ViewController: UITableViewDataSource, UITableViewDelegate {
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
+extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
         return viewModel.sections.count
     }
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let row = self.viewModel.sections[section]
         
         switch row {
@@ -96,23 +138,41 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        
+        guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
+        
+        let section = self.viewModel.sections[indexPath.section]
+        
+        switch section {
+        case .highlight(let model):
+            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier, for: indexPath) as? ImageHeaderCollectionReusableView else { return UICollectionReusableView() }
+            
+            let fullImageURL = "https://image.tmdb.org/t/p/w500\(model.posterPath)"
+            header.configure(image: fullImageURL)
+            
+            return header
+        default:
+            return UICollectionReusableView()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let row = self.viewModel.sections[indexPath.section]
         
         switch row {
         case .highlight(_):
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: HighlightTableViewCell.identifier, for: indexPath) as? HighlightTableViewCell else { return UITableViewCell() }
-            guard let movie = viewModel.movieDetails else { return UITableViewCell() }
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HighlightTableViewCell.identifier, for: indexPath) as? HighlightTableViewCell else { return UICollectionViewCell() }
+            guard let movie = viewModel.movieDetails else { return UICollectionViewCell() }
             
-            let fullImageURL = "https://image.tmdb.org/t/p/w500\(movie.posterPath)"
             let formattedPopularity = viewModel.formatNumber(movie.popularity)
             let formattedVoteCount = viewModel.formatNumber(movie.voteCount)
-            cell.configure(image: fullImageURL, title: movie.title, like: movie.like, popularity: formattedPopularity, voteCount: formattedVoteCount, viewModel: viewModel)
+            cell.configure(title: movie.title, like: movie.like, popularity: formattedPopularity, voteCount: formattedVoteCount, viewModel: viewModel)
             
             return cell
             
         case .movie(let movies):
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: SimilarTableViewCell.identifier, for: indexPath) as? SimilarTableViewCell else { return UITableViewCell() }
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SimilarTableViewCell.identifier, for: indexPath) as? SimilarTableViewCell else { return UICollectionViewCell() }
             let movie = movies[indexPath.row]
             
             let genresString = movie.genres.map { $0.name }.joined(separator: ", ")
@@ -126,14 +186,47 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
             return cell
             
         case .footer:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: FooterTableViewCell.identifier, for: indexPath) as? FooterTableViewCell else { return UITableViewCell() }
-            guard let movie = viewModel.movieDetails else { return UITableViewCell() }
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FooterTableViewCell.identifier, for: indexPath) as? FooterTableViewCell else { return UICollectionViewCell() }
+            guard let movie = viewModel.movieDetails else { return UICollectionViewCell() }
             cell.configure(like: movie.like, viewModel: viewModel)
             return cell
         }
     }
+}
+
+extension ViewController {
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+    class ImageHeaderCollectionReusableView: UICollectionReusableView {
+        static let identifier = "ImageHeaderCollectionReusableView"
+        
+        private let imageView: UIImageView = {
+            let image = UIImageView()
+            image.contentMode = .scaleAspectFill
+            image.clipsToBounds = true
+            image.translatesAutoresizingMaskIntoConstraints = false
+            return image
+        }()
+        
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            
+            addSubview(imageView)
+            backgroundColor = .cyan
+            NSLayoutConstraint.activate([
+                imageView.topAnchor.constraint(equalTo: topAnchor),
+                imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
+                imageView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                imageView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+        
+        func configure(image: String) {
+            imageView.loadImage(from: image)
+        }
     }
+
 }
