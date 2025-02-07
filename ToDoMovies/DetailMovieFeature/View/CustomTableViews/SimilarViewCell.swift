@@ -5,7 +5,6 @@ class SimilarTableViewCell: UITableViewCell {
     
     private let movieImageView: UIImageView = {
         let imageView = UIImageView()
-        
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -32,10 +31,8 @@ class SimilarTableViewCell: UITableViewCell {
     
     private lazy var stackView: UIStackView = {
         let stackView = UIStackView()
-        
         stackView.axis = .vertical
-        stackView.alignment = .center
-        stackView.spacing = 4
+        stackView.alignment = .leading
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         stackView.addArrangedSubview(movieTitle)
@@ -44,12 +41,9 @@ class SimilarTableViewCell: UITableViewCell {
         return stackView
     }()
     
-    override func prepareForReuse() {
-        
-    }
-    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
         
         setupUI()
     }
@@ -58,7 +52,7 @@ class SimilarTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // MARK: -
+    // MARK: - Configuring constraints
     
     private func setupUI() {
         contentView.addSubview(movieImageView)
@@ -72,19 +66,17 @@ class SimilarTableViewCell: UITableViewCell {
             movieImageView.heightAnchor.constraint(equalToConstant: 90),
 
             stackView.leadingAnchor.constraint(equalTo: movieImageView.trailingAnchor, constant: 8),
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            stackView.centerYAnchor.constraint(equalTo: movieImageView.centerYAnchor),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
 
-            bottomSpacingView.topAnchor.constraint(equalTo: stackView.bottomAnchor, constant: 42),
+            bottomSpacingView.topAnchor.constraint(equalTo: movieImageView.bottomAnchor, constant: 6),
             bottomSpacingView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             bottomSpacingView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            bottomSpacingView.heightAnchor.constraint(equalToConstant: 12),
             bottomSpacingView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
     }
-
     
-    // MARK: -
+    // MARK: - Receiving data
     
     func configure(image: String?, title: String, details: String) {
         if let image {

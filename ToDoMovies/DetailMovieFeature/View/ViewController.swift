@@ -4,6 +4,7 @@ import Combine
 class ViewController: UIViewController {
     private let viewModel = ViewModel()
     private let movieID = 550
+    var store = Set<AnyCancellable>()
     
     private let tableView = {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -11,11 +12,15 @@ class ViewController: UIViewController {
         tableView.separatorStyle = .none
         tableView.estimatedRowHeight = 44
         tableView.rowHeight = UITableView.automaticDimension
-        
+
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
     }()
-    var store = Set<AnyCancellable>()
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: true)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,8 +59,8 @@ class ViewController: UIViewController {
         tableView.delegate = self
         
         tableView.register(SimilarTableViewCell.self, forCellReuseIdentifier: SimilarTableViewCell.identifier)
-        //        tableView.register(FooterTableViewCell.self, forCellReuseIdentifier: FooterTableViewCell.identifier)
-        //        tableView.register(HighlightTableViewCell.self, forCellReuseIdentifier: HighlightTableViewCell.identifier)
+        tableView.register(FooterTableViewCell.self, forCellReuseIdentifier: FooterTableViewCell.identifier)
+        tableView.register(HighlightTableViewCell.self, forCellReuseIdentifier: HighlightTableViewCell.identifier)
     }
     
     //    private func setupBindings() {
@@ -96,26 +101,39 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         
         switch row {
         case .highlight(_):
-            return UITableViewCell()
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: HighlightTableViewCell.identifier, for: indexPath) as? HighlightTableViewCell else { return UITableViewCell() }
+            guard let movie = viewModel.movieDetails else { return UITableViewCell() }
+            
+            let fullImageURL = "https://image.tmdb.org/t/p/w500\(movie.posterPath)"
+            let formattedPopularity = viewModel.formatNumber(movie.popularity)
+            let formattedVoteCount = viewModel.formatNumber(movie.voteCount)
+            cell.configure(image: fullImageURL, title: movie.title, like: movie.like, popularity: formattedPopularity, voteCount: formattedVoteCount, viewModel: viewModel)
+            
+            return cell
+            
         case .movie(let movies):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: SimilarTableViewCell.identifier, for: indexPath) as? SimilarTableViewCell else { return UITableViewCell() }
             let movie = movies[indexPath.row]
             
             let genresString = movie.genres.map { $0.name }.joined(separator: ", ")
+            
             if let posterPath = movie.posterPath {
                 let fullImageURL = "https://image.tmdb.org/t/p/w500\(posterPath)"
-                cell.configure(image: fullImageURL, title: movie.title, details: "\(movie.releaseDate) | \(genresString)")
+                let formattedYear = viewModel.formatYear(from: movie.releaseDate)
+                cell.configure(image: fullImageURL, title: movie.title, details: "\(formattedYear)  \(genresString)")
             }
             
-            
             return cell
+            
         case .footer:
-            return UITableViewCell()
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: FooterTableViewCell.identifier, for: indexPath) as? FooterTableViewCell else { return UITableViewCell() }
+            guard let movie = viewModel.movieDetails else { return UITableViewCell() }
+            cell.configure(like: movie.like, viewModel: viewModel)
+            return cell
         }
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableView.automaticDimension
     }
-    
 }

@@ -6,25 +6,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         
-        guard let windowScene = (scene as? UIWindowScene) else { return }
+        guard let windowScene = scene as? UIWindowScene else { return }
         
-        self.window = UIWindow(windowScene: windowScene)
-        let viewController = UIViewController()
-        viewController.view.backgroundColor = .white
-        
+        let window = UIWindow(windowScene: windowScene)
         let navigationController = UINavigationController(rootViewController: ViewController())
+
+        window.rootViewController = navigationController
+        window.overrideUserInterfaceStyle = .dark
+        window.makeKeyAndVisible()
         
-        self.window?.rootViewController = navigationController
-        self.window?.makeKeyAndVisible()
+        self.window = window
     }
-    
-    func sceneDidDisconnect(_ scene: UIScene) { }
-    
-    func sceneDidBecomeActive(_ scene: UIScene) { }
-    
-    func sceneWillResignActive(_ scene: UIScene) { }
-    
-    func sceneWillEnterForeground(_ scene: UIScene) { }
-    
-    func sceneDidEnterBackground(_ scene: UIScene) { }
 }

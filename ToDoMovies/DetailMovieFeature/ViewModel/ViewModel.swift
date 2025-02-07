@@ -5,7 +5,6 @@ class ViewModel {
     private let tmdbManager = TMDBManager()
     private var cancellables = Set<AnyCancellable>()
     
-    
     @Published var sections: [SectionStructure] = []
     
     var movieDetails: MovieDetail?
@@ -87,15 +86,17 @@ extension ViewModel {
     struct MovieDetail {
         let id: Int
         let title: String
-        let releaseDate: String
         let posterPath: String
         var like: Bool = false
+        let popularity: Double
+        let voteCount: Double
         
         init(from dto: MovieDetailDTO) {
             self.id = dto.id
             self.title = dto.title
-            self.releaseDate = dto.releaseDate
             self.posterPath = dto.posterPath
+            self.popularity = dto.popularity
+            self.voteCount = dto.voteCount
         }
     }
     
@@ -104,10 +105,37 @@ extension ViewModel {
         case movie ( [SimilarMovie] )
         case footer
     }
-
 }
 
-//tenho q ajustar a view para apresentar os dados
-//Collection view
-//Table View V
-//
+extension ViewModel {
+    func formatNumber(_ value: Double) -> String {
+        let thousand = 1_000.0
+        let million = 1_000_000.0
+        
+        if value >= million {
+            return String(format: "%.1fM", value / million)
+        } else if value >= thousand {
+            return String(format: "%.1fk", value / thousand)
+        } else {
+            return String(format: "%.0f", value)
+        }
+    }
+    
+    func formatYear(from dateString: String) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        
+        if let date = dateFormatter.date(from: dateString) {
+            let yearFormatter = DateFormatter()
+            yearFormatter.dateFormat = "yyyy"
+            return yearFormatter.string(from: date)
+        }
+        
+        return dateString
+    }
+    
+    func toggleLike() {
+        movieDetails?.like.toggle()
+    }
+}
