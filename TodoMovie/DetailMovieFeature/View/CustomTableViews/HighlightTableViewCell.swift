@@ -14,7 +14,7 @@ class HighlightTableViewCell: UICollectionViewCell {
     
     private let movieTitle: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
+        label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -40,6 +40,9 @@ class HighlightTableViewCell: UICollectionViewCell {
         let heartFilledImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
         button.setImage(heartImage, for: .normal)
         button.setImage(heartFilledImage, for: .selected)
+        button.imageView?.contentMode = .scaleAspectFit
+        button.contentVerticalAlignment = .fill
+        button.contentHorizontalAlignment = .fill
         button.tintColor = .white
         button.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
         return button
@@ -110,7 +113,7 @@ class HighlightTableViewCell: UICollectionViewCell {
         
         stackView.addArrangedSubview(movieTitle)
         stackView.addArrangedSubview(infoStack)
-        stackView.addArrangedSubview(addLike)
+
         
         return stackView
     }()
@@ -135,6 +138,8 @@ class HighlightTableViewCell: UICollectionViewCell {
 
             addLike.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
             addLike.centerYAnchor.constraint(equalTo: movieTitle.centerYAnchor),
+            addLike.widthAnchor.constraint(equalToConstant: 30),
+            addLike.heightAnchor.constraint(equalToConstant: 30),
 
             contentView.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: 8),
 

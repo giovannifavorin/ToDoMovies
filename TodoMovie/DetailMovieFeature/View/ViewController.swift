@@ -133,6 +133,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = scrollView.contentOffset.y
+        collectionView.contentInset.top = 0
         
         if let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: 0)) {
             if offsetY < 0 {
@@ -142,13 +143,12 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
                 header.frame.origin.y = offsetY
                 header.frame.size.height = headerHeight + stretchAmount
                 
-                let translateY = (header.frame.height - headerHeight) / 2
                 if let imageView = header.subviews.first as? UIImageView {
+                    let translateY = (header.frame.height - headerHeight) / 2
                     imageView.transform = CGAffineTransform(scaleX: scale, y: scale).concatenating(CGAffineTransform(translationX: 0, y: -translateY))
                 }
             } else {
                 header.frame.size.height = headerHeight
-                
                 if let imageView = header.subviews.first as? UIImageView {
                     imageView.transform = .identity
                 }
@@ -202,7 +202,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
             
             let formattedPopularity = viewModel.formatNumber(value: movie.popularity)
             let formattedVoteCount = viewModel.formatNumber(value: movie.voteCount)
-            cell.configure(title: movie.title, like: movie.like, popularity: formattedPopularity, voteCount: formattedVoteCount, viewModel: viewModel)
+            cell.configure(title: movie.title, like: movie.like, popularity: "\(formattedPopularity) Popularidade", voteCount: "\(formattedVoteCount) Curtidas", viewModel: viewModel)
             
             return cell
             
