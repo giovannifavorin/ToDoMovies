@@ -264,5 +264,5 @@ extension ViewController {
 }
 
 // como arrumar o header
-// como arrumar similarMovies vazias
 // Fazer animacao
+// fazer o botao de adicionar na lista funcionar

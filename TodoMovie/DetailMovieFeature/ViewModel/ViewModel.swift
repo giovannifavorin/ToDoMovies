@@ -46,18 +46,20 @@ class ViewModel {
                     var similarMovieGenres: [GenreDTO] = []
                     
                     for genreID in similarMovie.genreIDs {
-                        if let genre = genres.filter({ $0.id == genreID }).first {
+                        if let genre = genres.first(where: { $0.id == genreID }) {
                             similarMovieGenres.append(genre)
                         }
                     }
-                    similarMoviesAux.append(.init(from: similarMovie, from: similarMovieGenres))
+                    
+                    if let _ = similarMovie.posterPath {
+                        similarMoviesAux.append(.init(from: similarMovie, from: similarMovieGenres))
+                    }
                 }
                 
                 similarMovies = similarMoviesAux
                 
                 sections.append(.movie(similarMovies))
                 sections.append(.footer)
-                
                 
             } catch {
                 print("Error with similar movies: \(error)")
