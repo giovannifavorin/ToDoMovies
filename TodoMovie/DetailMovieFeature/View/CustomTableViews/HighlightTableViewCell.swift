@@ -14,21 +14,21 @@ class HighlightTableViewCell: UICollectionViewCell {
     
     private let movieTitle: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 16)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let likes: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let popularity: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12)
+        label.font = .systemFont(ofSize: 14)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -36,10 +36,70 @@ class HighlightTableViewCell: UICollectionViewCell {
     private lazy var addLike: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "heart"), for: .normal)
-        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        let heartImage = UIImage(systemName: "heart")?.withRenderingMode(.alwaysTemplate)
+        let heartFilledImage = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
+        button.setImage(heartImage, for: .normal)
+        button.setImage(heartFilledImage, for: .selected)
+        button.tintColor = .white
         button.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
         return button
+    }()
+    
+    private let heartIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate)
+        imageView.tintColor = .white
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    private let eyeIcon: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "eye.fill")?.withRenderingMode(.alwaysTemplate)
+        imageView.tintColor = .gray
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+
+    private lazy var likesStack: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.addArrangedSubview(heartIcon)
+        stackView.addArrangedSubview(likes)
+        
+        return stackView
+    }()
+    
+    private lazy var popularityStack: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.addArrangedSubview(eyeIcon)
+        stackView.addArrangedSubview(popularity)
+        
+        return stackView
+    }()
+    
+    private lazy var infoStack: UIStackView = {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = 16
+        stackView.alignment = .center
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        
+        stackView.addArrangedSubview(likesStack)
+        stackView.addArrangedSubview(popularityStack)
+        
+        return stackView
     }()
     
     private lazy var stackView: UIStackView = {
@@ -49,8 +109,7 @@ class HighlightTableViewCell: UICollectionViewCell {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         
         stackView.addArrangedSubview(movieTitle)
-        stackView.addArrangedSubview(likes)
-        stackView.addArrangedSubview(popularity)
+        stackView.addArrangedSubview(infoStack)
         stackView.addArrangedSubview(addLike)
         
         return stackView
@@ -67,16 +126,23 @@ class HighlightTableViewCell: UICollectionViewCell {
     
     private func setupUI() {
         contentView.addSubview(stackView)
+        contentView.addSubview(addLike)
 
         NSLayoutConstraint.activate([
-            // Constraints do stackView
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: 8),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            stackView.trailingAnchor.constraint(equalTo: addLike.leadingAnchor, constant: -8),
             stackView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            
-            // Ajustando a altura mínima da célula
-            contentView.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: 8)
+
+            addLike.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            addLike.centerYAnchor.constraint(equalTo: movieTitle.centerYAnchor),
+
+            contentView.bottomAnchor.constraint(greaterThanOrEqualTo: stackView.bottomAnchor, constant: 8),
+
+            heartIcon.widthAnchor.constraint(equalToConstant: 18),
+            heartIcon.heightAnchor.constraint(equalToConstant: 18),
+
+            eyeIcon.widthAnchor.constraint(equalToConstant: 18),
+            eyeIcon.heightAnchor.constraint(equalToConstant: 18)
         ])
     }
 

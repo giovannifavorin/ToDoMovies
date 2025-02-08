@@ -17,7 +17,6 @@
 		50ACB3022D56C558004ADA9F /* SimilarViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB2F82D56C558004ADA9F /* SimilarViewCell.swift */; };
 		50ACB3032D56C558004ADA9F /* SimilarMovie+Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB2F32D56C558004ADA9F /* SimilarMovie+Model.swift */; };
 		50ACB3042D56C558004ADA9F /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB2FC2D56C558004ADA9F /* ViewModel.swift */; };
-		50ACB3052D56C558004ADA9F /* ImageHeaderCollectionReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB2F72D56C558004ADA9F /* ImageHeaderCollectionReusableView.swift */; };
 		50ACB3062D56C558004ADA9F /* MovieDetail+Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB2F22D56C558004ADA9F /* MovieDetail+Model.swift */; };
 		50ACB3092D56C566004ADA9F /* ImageLoad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB3072D56C566004ADA9F /* ImageLoad.swift */; };
 		50ACB30C2D56C56F004ADA9F /* TMDBManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50ACB30A2D56C56F004ADA9F /* TMDBManager.swift */; };
@@ -34,7 +33,6 @@
 		50ACB2F32D56C558004ADA9F /* SimilarMovie+Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SimilarMovie+Model.swift"; sourceTree = "<group>"; };
 		50ACB2F52D56C558004ADA9F /* FooterTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterTableViewCell.swift; sourceTree = "<group>"; };
 		50ACB2F62D56C558004ADA9F /* HighlightTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightTableViewCell.swift; sourceTree = "<group>"; };
-		50ACB2F72D56C558004ADA9F /* ImageHeaderCollectionReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageHeaderCollectionReusableView.swift; sourceTree = "<group>"; };
 		50ACB2F82D56C558004ADA9F /* SimilarViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimilarViewCell.swift; sourceTree = "<group>"; };
 		50ACB2FA2D56C558004ADA9F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		50ACB2FC2D56C558004ADA9F /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
@@ -106,7 +104,6 @@
 			children = (
 				50ACB2F52D56C558004ADA9F /* FooterTableViewCell.swift */,
 				50ACB2F62D56C558004ADA9F /* HighlightTableViewCell.swift */,
-				50ACB2F72D56C558004ADA9F /* ImageHeaderCollectionReusableView.swift */,
 				50ACB2F82D56C558004ADA9F /* SimilarViewCell.swift */,
 			);
 			path = CustomTableViews;
@@ -232,7 +229,6 @@
 				50ACB3022D56C558004ADA9F /* SimilarViewCell.swift in Sources */,
 				50ACB3032D56C558004ADA9F /* SimilarMovie+Model.swift in Sources */,
 				50ACB3042D56C558004ADA9F /* ViewModel.swift in Sources */,
-				50ACB3052D56C558004ADA9F /* ImageHeaderCollectionReusableView.swift in Sources */,
 				50ACB3062D56C558004ADA9F /* MovieDetail+Model.swift in Sources */,
 				50ACB2F12D56C53F004ADA9F /* AppDelegate.swift in Sources */,
 				50ACB30C2D56C56F004ADA9F /* TMDBManager.swift in Sources */,

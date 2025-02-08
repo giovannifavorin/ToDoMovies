@@ -7,16 +7,18 @@ class FooterTableViewCell: UICollectionViewCell {
     private let likeButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "heart"), for: .normal)
-        button.setImage(UIImage(systemName: "heart.fill"), for: .selected)
+        button.setImage(UIImage(systemName: "heart")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(UIImage(systemName: "heart.fill")?.withRenderingMode(.alwaysTemplate), for: .selected)
         button.setTitle("Curtir", for: .normal)
         button.setTitle("Curtido", for: .selected)
-        button.setTitleColor(.black, for: .normal)
-        button.setTitleColor(.white, for: .selected)
+        button.setTitleColor(.white, for: .normal)
+        button.setTitleColor(.black, for: .selected)
         button.layer.borderWidth = 2
         button.layer.borderColor = UIColor.white.cgColor
         button.layer.cornerRadius = 8
-        button.addTarget(FooterTableViewCell.self, action: #selector(didTapLike), for: .touchUpInside)
+        button.backgroundColor = .clear
+        button.tintColor = .white
+        button.addTarget(self, action: #selector(didTapLike), for: .touchUpInside)
         return button
     }()
     
@@ -65,18 +67,28 @@ class FooterTableViewCell: UICollectionViewCell {
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
             
-            likeButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.95),
-            addToListButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.95)
+            likeButton.heightAnchor.constraint(equalToConstant: 30),
+            addToListButton.heightAnchor.constraint(equalTo: likeButton.heightAnchor),
+            
+            likeButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.98),
+            addToListButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.98),
         ])
     }
     
     func configure(like: Bool, viewModel: ViewModel) {
         self.viewModel = viewModel
-        likeButton.isSelected = like
+        updateLikeButton()
     }
-    
+
     @objc private func didTapLike() {
         viewModel?.toggleLike()
-        likeButton.isSelected.toggle()
+        updateLikeButton()
+    }
+    
+    private func updateLikeButton() {
+        guard let isLiked = viewModel?.movieDetails?.like else { return }
+        likeButton.isSelected = isLiked
+        likeButton.backgroundColor = isLiked ? .white : .clear
+        likeButton.tintColor = isLiked ? .black : .white
     }
 }

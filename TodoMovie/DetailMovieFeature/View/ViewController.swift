@@ -6,6 +6,9 @@ class ViewController: UIViewController {
     private let movieID = 550
     var store = Set<AnyCancellable>()
     
+    private let headerHeight: CGFloat = 300
+    private let maxHeaderHeight: CGFloat = 600
+    
     private lazy var collectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout { sectionIndex, _ -> NSCollectionLayoutSection? in
             return self.createSectionLayout(sectionIndex: sectionIndex)
@@ -38,8 +41,6 @@ class ViewController: UIViewController {
         
         view.addSubview(collectionView)
         
-        collectionView.backgroundColor = .red
-        
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: view.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -59,16 +60,16 @@ class ViewController: UIViewController {
         collectionView.register(ImageHeaderCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier)
     }
     
-        private func setupBindings() {
-            viewModel.$sections.receive(on: DispatchQueue.main)
-                .sink { [weak self] _ in
-                    guard let self else { return }
-                    UIView.performWithoutAnimation {
-                        self.collectionView.reloadData()
-                    }
+    private func setupBindings() {
+        viewModel.$sections.receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                UIView.performWithoutAnimation {
+                    self.collectionView.reloadData()
                 }
-                .store(in: &store)
-        }
+            }
+            .store(in: &store)
+    }
     
     func createSectionLayout(sectionIndex: Int) -> NSCollectionLayoutSection {
         let section = self.viewModel.sections[sectionIndex]
@@ -102,9 +103,11 @@ class ViewController: UIViewController {
             section.boundarySupplementaryItems = [sectionHeader]
             section.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0)
             
-            
             return section
         default:
+            let spacing: CGFloat = 16
+            let contentInsets: NSDirectionalEdgeInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+            
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             
@@ -112,8 +115,8 @@ class ViewController: UIViewController {
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 16
-            section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+            section.interGroupSpacing = spacing
+            section.contentInsets = contentInsets
             
             return section
         }
@@ -121,6 +124,38 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        if section == 0 {
+            return CGSize(width: collectionView.bounds.width, height: headerHeight)
+        }
+        return .zero
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        
+        if let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: 0)) {
+            if offsetY < 0 {
+                let stretchAmount = min(-offsetY, maxHeaderHeight - headerHeight)
+                let scale = 1 + (stretchAmount / headerHeight)
+                
+                header.frame.origin.y = offsetY
+                header.frame.size.height = headerHeight + stretchAmount
+                
+                let translateY = (header.frame.height - headerHeight) / 2
+                if let imageView = header.subviews.first as? UIImageView {
+                    imageView.transform = CGAffineTransform(scaleX: scale, y: scale).concatenating(CGAffineTransform(translationX: 0, y: -translateY))
+                }
+            } else {
+                header.frame.size.height = headerHeight
+                
+                if let imageView = header.subviews.first as? UIImageView {
+                    imageView.transform = .identity
+                }
+            }
+        }
+    }
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return viewModel.sections.count
     }
@@ -165,8 +200,8 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HighlightTableViewCell.identifier, for: indexPath) as? HighlightTableViewCell else { return UICollectionViewCell() }
             guard let movie = viewModel.movieDetails else { return UICollectionViewCell() }
             
-            let formattedPopularity = viewModel.formatNumber(movie.popularity)
-            let formattedVoteCount = viewModel.formatNumber(movie.voteCount)
+            let formattedPopularity = viewModel.formatNumber(value: movie.popularity)
+            let formattedVoteCount = viewModel.formatNumber(value: movie.voteCount)
             cell.configure(title: movie.title, like: movie.like, popularity: formattedPopularity, voteCount: formattedVoteCount, viewModel: viewModel)
             
             return cell
@@ -195,7 +230,6 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
 }
 
 extension ViewController {
-    
     class ImageHeaderCollectionReusableView: UICollectionReusableView {
         static let identifier = "ImageHeaderCollectionReusableView"
         
@@ -209,13 +243,12 @@ extension ViewController {
         
         override init(frame: CGRect) {
             super.init(frame: frame)
-            
             addSubview(imageView)
-            backgroundColor = .cyan
+            
             NSLayoutConstraint.activate([
-                imageView.topAnchor.constraint(equalTo: topAnchor),
                 imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
                 imageView.trailingAnchor.constraint(equalTo: trailingAnchor),
+                imageView.topAnchor.constraint(equalTo: topAnchor),
                 imageView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
         }
@@ -228,5 +261,8 @@ extension ViewController {
             imageView.loadImage(from: image)
         }
     }
-
 }
+
+// como arrumar o header
+// como arrumar similarMovies vazias
+// Fazer animacao

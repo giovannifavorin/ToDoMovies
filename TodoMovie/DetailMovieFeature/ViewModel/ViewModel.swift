@@ -108,16 +108,13 @@ extension ViewModel {
 }
 
 extension ViewModel {
-    func formatNumber(_ value: Double) -> String {
-        let thousand = 1_000.0
-        let million = 1_000_000.0
-        
-        if value >= million {
-            return String(format: "%.1fM", value / million)
-        } else if value >= thousand {
-            return String(format: "%.1fk", value / thousand)
+    func formatNumber(value: Double) -> String {
+        if value >= 1_000_000 {
+            return String(format: "%.1fM", Double(value) / 1_000_000)
+        } else if value >= 1_000 {
+            return String(format: "%.1fk", Double(value) / 1_000)
         } else {
-            return String(format: "%.0f", value)
+            return String(format: "%.1f", value) + "k"
         }
     }
     
