@@ -53,11 +53,10 @@ class ViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         
+        collectionView.register(ImageHeaderCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier)
+        collectionView.register(HighlightTableViewCell.self, forCellWithReuseIdentifier: HighlightTableViewCell.identifier)
         collectionView.register(SimilarTableViewCell.self, forCellWithReuseIdentifier: SimilarTableViewCell.identifier)
         collectionView.register(FooterTableViewCell.self, forCellWithReuseIdentifier: FooterTableViewCell.identifier)
-        collectionView.register(HighlightTableViewCell.self, forCellWithReuseIdentifier: HighlightTableViewCell.identifier)
-        
-        collectionView.register(ImageHeaderCollectionReusableView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier)
     }
     
     private func setupBindings() {
@@ -84,7 +83,7 @@ class ViewController: UIViewController {
                                                    heightDimension: .estimated(44))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             
-            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
             
             let section = NSCollectionLayoutSection(group: group)
             section.interGroupSpacing = 16
@@ -101,7 +100,7 @@ class ViewController: UIViewController {
             sectionHeader.zIndex = -1
             
             section.boundarySupplementaryItems = [sectionHeader]
-            section.contentInsets = NSDirectionalEdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0)
+            section.contentInsets = NSDirectionalEdgeInsets(top: -8, leading: 0, bottom: 0, trailing: 0)
             
             return section
         default:
@@ -181,7 +180,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
         
         switch section {
         case .highlight(let model):
-            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier, for: indexPath) as? ImageHeaderCollectionReusableView else { return UICollectionReusableView() }
+            guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ImageHeaderCollectionReusableView.identifier, for: indexPath) as? ImageHeaderCollectionReusableView else { return UICollectionReusableView() }
             
             let fullImageURL = "https://image.tmdb.org/t/p/w500\(model.posterPath)"
             header.configure(image: fullImageURL)
@@ -241,6 +240,17 @@ extension ViewController {
             return image
         }()
         
+        private let gradientLayer: CAGradientLayer = {
+            let gradient = CAGradientLayer()
+            gradient.colors = [
+                UIColor.clear.cgColor,
+                UIColor.black.cgColor
+            ]
+            gradient.startPoint = CGPoint(x: 0.5, y: 0)
+            gradient.endPoint = CGPoint(x: 0.5, y: 1)
+            return gradient
+        }()
+
         override init(frame: CGRect) {
             super.init(frame: frame)
             addSubview(imageView)
@@ -257,6 +267,15 @@ extension ViewController {
             fatalError("init(coder:) has not been implemented")
         }
         
+        override func layoutSubviews() {
+            super.layoutSubviews()
+            gradientLayer.frame = imageView.bounds
+        
+            if gradientLayer.superlayer == nil {
+                imageView.layer.insertSublayer(gradientLayer, at: 1)
+            }
+        }
+
         func configure(image: String) {
             imageView.loadImage(from: image)
         }

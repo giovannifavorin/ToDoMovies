@@ -4,14 +4,6 @@ class HighlightTableViewCell: UICollectionViewCell {
     static let identifier = "HighlightTableViewCell"
     var viewModel: ViewModel?
 
-    private let movieImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        return imageView
-    }()
-    
     private let movieTitle: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 32, weight: .bold)
