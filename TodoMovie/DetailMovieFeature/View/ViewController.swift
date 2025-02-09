@@ -6,13 +6,16 @@ class ViewController: UIViewController {
     private let movieID = 550
     var store = Set<AnyCancellable>()
     
-    private let headerHeight: CGFloat = 300
-    private let maxHeaderHeight: CGFloat = 600
+    private let headerHeight: CGFloat = 340
+    private let maxHeaderHeight: CGFloat = 500
     
     private lazy var collectionView = {
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewCompositionalLayout { sectionIndex, _ -> NSCollectionLayoutSection? in
             return self.createSectionLayout(sectionIndex: sectionIndex)
         })
+        
+        collectionView.backgroundColor = .systemBackground
+        collectionView.contentInsetAdjustmentBehavior = .never
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.showsVerticalScrollIndicator = false
         
@@ -38,7 +41,6 @@ class ViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .white
-        
         view.addSubview(collectionView)
         
         NSLayoutConstraint.activate([
@@ -83,14 +85,13 @@ class ViewController: UIViewController {
                                                    heightDimension: .estimated(44))
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
             
-            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12)
+            group.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
             
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 16
+            section.interGroupSpacing = 0
             
-            // Configuração do header
             let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                                    heightDimension: .absolute(300))
+                                                    heightDimension: .absolute(340))
             let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerSize,
                 elementKind: UICollectionView.elementKindSectionHeader,
@@ -100,7 +101,7 @@ class ViewController: UIViewController {
             sectionHeader.zIndex = -1
             
             section.boundarySupplementaryItems = [sectionHeader]
-            section.contentInsets = NSDirectionalEdgeInsets(top: -8, leading: 0, bottom: 0, trailing: 0)
+            section.contentInsets = NSDirectionalEdgeInsets(top: -20, leading: 0, bottom: 0, trailing: 0)
             
             return section
         default:
@@ -124,17 +125,21 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        if section == 0 {
+        let section = self.viewModel.sections[section]
+        
+        switch section {
+        case .highlight:
             return CGSize(width: collectionView.bounds.width, height: headerHeight)
+        default:
+            return .zero
         }
-        return .zero
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetY = scrollView.contentOffset.y
         collectionView.contentInset.top = 0
         
-        if let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: 0)) {
+        if let header = collectionView.supplementaryView(forElementKind: UICollectionView.elementKindSectionHeader, at: IndexPath(item: 0, section: 0)) as? ImageHeaderCollectionReusableView {
             if offsetY < 0 {
                 let stretchAmount = min(-offsetY, maxHeaderHeight - headerHeight)
                 let scale = 1 + (stretchAmount / headerHeight)
@@ -142,16 +147,23 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
                 header.frame.origin.y = offsetY
                 header.frame.size.height = headerHeight + stretchAmount
                 
-                if let imageView = header.subviews.first as? UIImageView {
-                    let translateY = (header.frame.height - headerHeight) / 2
+                let translateY = (header.frame.height - headerHeight) / 2
+                if let imageView = header.subviews.first(where: { $0 is UIImageView }) as? UIImageView {
                     imageView.transform = CGAffineTransform(scaleX: scale, y: scale).concatenating(CGAffineTransform(translationX: 0, y: -translateY))
                 }
+                header.updateBlur(alpha: 0)
             } else {
                 header.frame.size.height = headerHeight
-                if let imageView = header.subviews.first as? UIImageView {
+                
+                if let imageView = header.subviews.first(where: { $0 is UIImageView }) as? UIImageView {
                     imageView.transform = .identity
                 }
+                let blurAlpha = min(90, offsetY / 190)
+                header.updateBlur(alpha: blurAlpha)
             }
+            
+            header.setNeedsLayout()
+            header.layoutIfNeeded()
         }
     }
     
@@ -195,7 +207,7 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
         let row = self.viewModel.sections[indexPath.section]
         
         switch row {
-        case .highlight(_):
+        case .highlight:
             guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: HighlightTableViewCell.identifier, for: indexPath) as? HighlightTableViewCell else { return UICollectionViewCell() }
             guard let movie = viewModel.movieDetails else { return UICollectionViewCell() }
             
@@ -240,20 +252,24 @@ extension ViewController {
             return image
         }()
         
-        private let gradientLayer: CAGradientLayer = {
+        private let blurEffectView: UIVisualEffectView = {
+            let blur = UIBlurEffect(style: .systemThickMaterialDark)
+            let view = UIVisualEffectView(effect: blur)
+            view.alpha = 0
+            view.translatesAutoresizingMaskIntoConstraints = false
+            return view
+        }()
+        
+        private let bottomGradientLayer: CAGradientLayer = {
             let gradient = CAGradientLayer()
-            gradient.colors = [
-                UIColor.clear.cgColor,
-                UIColor.black.cgColor
-            ]
-            gradient.startPoint = CGPoint(x: 0.5, y: 0)
-            gradient.endPoint = CGPoint(x: 0.5, y: 1)
+            gradient.colors = [UIColor.clear.cgColor, UIColor.black.cgColor]
             return gradient
         }()
-
+        
         override init(frame: CGRect) {
             super.init(frame: frame)
             addSubview(imageView)
+            imageView.addSubview(blurEffectView)
             
             NSLayoutConstraint.activate([
                 imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
@@ -261,6 +277,15 @@ extension ViewController {
                 imageView.topAnchor.constraint(equalTo: topAnchor),
                 imageView.bottomAnchor.constraint(equalTo: bottomAnchor)
             ])
+            
+            NSLayoutConstraint.activate([
+                blurEffectView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
+                blurEffectView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
+                blurEffectView.topAnchor.constraint(equalTo: imageView.topAnchor),
+                blurEffectView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor)
+            ])
+            
+            imageView.layer.addSublayer(bottomGradientLayer)
         }
         
         required init?(coder: NSCoder) {
@@ -268,20 +293,23 @@ extension ViewController {
         }
         
         override func layoutSubviews() {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
             super.layoutSubviews()
-            gradientLayer.frame = imageView.bounds
-        
-            if gradientLayer.superlayer == nil {
-                imageView.layer.insertSublayer(gradientLayer, at: 1)
-            }
+            let gradientHeight = bounds.height * 0.4
+            bottomGradientLayer.frame = CGRect(
+                x: 0,
+                y: bounds.height - gradientHeight, width: bounds.width, height: gradientHeight
+            )
+            CATransaction.commit()
         }
-
+        
         func configure(image: String) {
             imageView.loadImage(from: image)
         }
+        
+        func updateBlur(alpha: CGFloat) {
+            blurEffectView.alpha = alpha
+        }
     }
 }
-
-// como arrumar o header
-// Fazer animacao
-// fazer o botao de adicionar na lista funcionar
