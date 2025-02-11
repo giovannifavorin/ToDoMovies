@@ -34,9 +34,7 @@ class ViewController: UIViewController {
         setupBindings()
         setupTableView()
         
-        viewModel.fetchGenres()
-        viewModel.fetchMovieDetails(movieID: movieID)
-        viewModel.fetchSimilarMovies(movieID: movieID)
+        viewModel.fetchAllMovieData(movieID: movieID)
     }
     
     private func setupUI() {

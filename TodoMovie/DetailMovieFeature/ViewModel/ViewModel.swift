@@ -11,6 +11,44 @@ class ViewModel {
     var similarMovies: [SimilarMovie] = []
     var genres: [GenreDTO] = []
     
+    func updateSections() {
+        sections = []
+        
+        if let movieDetails = movieDetails {
+            sections.append(.highlight(movieDetails))
+        }
+        
+        if !similarMovies.isEmpty {
+            sections.append(.movie(similarMovies))
+        }
+        
+        sections.append(.footer)
+    }
+    
+    func fetchAllMovieData(movieID: Int) {
+        Task {
+            do {
+                genres = try await tmdbManager.getGenres().genres
+                
+                let movieDetailDTO = try await tmdbManager.getMovieDetails(for: movieID)
+                movieDetails = .init(from: movieDetailDTO)
+                
+                let similarMoviesResponseDTO = try await tmdbManager.getSimilarMovies(for: movieID)
+                similarMovies = similarMoviesResponseDTO.results.compactMap { similarMovie in
+                    let similarMovieGenres = genres.filter { similarMovie.genreIDs.contains($0.id) }
+                    
+                    guard similarMovie.posterPath != nil else { return nil }
+                    
+                    return SimilarMovie(from: similarMovie, from: similarMovieGenres)
+                }
+                
+                updateSections()
+            } catch {
+                print("Error fetching movie data: \(error)")
+            }
+        }
+    }
+    
     func fetchGenres() {
         Task {
             do {
@@ -27,39 +65,24 @@ class ViewModel {
                 let movieDetailDTO = try await tmdbManager.getMovieDetails(for: movieID)
                 movieDetails = .init(from: movieDetailDTO)
                 
-                guard let movieDetails = movieDetails else { return }
-                
-                sections.append(.highlight(movieDetails))
             } catch {
                 print("Error with movie details: \(error)")
             }
         }
     }
-    
+
     func fetchSimilarMovies(movieID: Int) {
         Task {
             do {
                 let similarMoviesResponseDTO = try await tmdbManager.getSimilarMovies(for: movieID)
                 
-                var similarMoviesAux: [SimilarMovie] = []
-                for similarMovie in similarMoviesResponseDTO.results {
-                    var similarMovieGenres: [GenreDTO] = []
+                similarMovies = similarMoviesResponseDTO.results.compactMap { similarMovie in
+                    let similarMovieGenres = genres.filter { similarMovie.genreIDs.contains($0.id) }
                     
-                    for genreID in similarMovie.genreIDs {
-                        if let genre = genres.first(where: { $0.id == genreID }) {
-                            similarMovieGenres.append(genre)
-                        }
-                    }
+                    guard similarMovie.posterPath != nil else { return nil }
                     
-                    if let _ = similarMovie.posterPath {
-                        similarMoviesAux.append(.init(from: similarMovie, from: similarMovieGenres))
-                    }
+                    return SimilarMovie(from: similarMovie, from: similarMovieGenres)
                 }
-                
-                similarMovies = similarMoviesAux
-                
-                sections.append(.movie(similarMovies))
-                sections.append(.footer)
                 
             } catch {
                 print("Error with similar movies: \(error)")

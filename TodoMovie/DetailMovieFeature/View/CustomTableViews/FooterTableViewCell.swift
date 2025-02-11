@@ -4,7 +4,7 @@ class FooterTableViewCell: UICollectionViewCell {
     static let identifier = "FooterTableViewCell"
     var viewModel: ViewModel?
     
-    private let likeButton: UIButton = {
+    private lazy var likeButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         button.setImage(UIImage(systemName: "heart")?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -67,7 +67,7 @@ class FooterTableViewCell: UICollectionViewCell {
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
             
-            likeButton.heightAnchor.constraint(equalToConstant: 30),
+            likeButton.heightAnchor.constraint(equalToConstant: 40),
             addToListButton.heightAnchor.constraint(equalTo: likeButton.heightAnchor),
             
             likeButton.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: 0.98),
